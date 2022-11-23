@@ -13,6 +13,7 @@
             <a class="btn btn-info" href="/product/create"
               >Create New Product</a
             >
+            <p id="TotalProduct"><%= TotalProduct %></p>
             <% if (message) { %>
             <div class="alert alert-danger">
               <pre style="color: red"><%= message %></pre>
@@ -55,9 +56,11 @@
             </table>
             <% } %>
             <div class="d-flex flex-row justify-content-center">
-              <div class="p-2" id="Next">Flex item 1</div>
-              <div class="p-2">Flex item 2</div>
-              <div class="p-2">Flex item 3</div>
+              <div class="p-2" id="First">First</div>
+              <div><p></p></div>
+              <div class="p-2" id="Back">Back</div>
+              <div class="p-2" id="Next">Next</div>
+              <div class="p-2" id="Last">Last</div>
             </div>
           </div>
         </div>
@@ -65,6 +68,12 @@
     </section>
     <%- include ('../../partials/footer') %>
     <script>
+      const locationUser = window.location.href;
+      const arr = locationUser?.split('&');
+      const getCurrentPage = arr[0]?.split('?');
+      const getPage = getCurrentPage[1]?.split('=');
+      const getTotalProduct = $('#TotalProduct').text();
+
       $('th').click(function () {
         var table = $(this).parents('table').eq(0);
         var rows = table
@@ -94,9 +103,62 @@
       $(document).ready(function () {
         $('#mnuProduct').addClass('active');
       });
+
+      $('#Back').click(() => {
+        if (Number(getPage[1]) === 1) {
+          alert('You are at the last page');
+        } else {
+          let page = Number(getPage[1]) - 1;
+          window.location.replace(
+            locationUser.replace('page=' + getPage[1], 'page=' + String(page))
+          );
+        }
+
+        //console.log(location);
+      });
       $('#Next').click(() => {
-        console.log(products)
-       
+        if (getPage === undefined) {
+          window.location.replace(
+            window.location.href + '?page=2&size=10&sort=name&dir=desc'
+          );
+        }
+        let page = Number(getPage[1]) + 1;
+        if (page * 10 <= Math.ceil(Number(getTotalProduct) / 10) * 10) {
+          window.location.replace(
+            locationUser.replace('page=' + getPage[1], 'page=' + String(page))
+          );
+        }
+
+        //      window.location.replace('');
+      });
+      $('#First').click(() => {
+        if (getPage === undefined) {
+          window.location.replace(
+            window.location.href + '?page=1&size=10&sort=name&dir=ASC'
+          );
+        }
+        window.location.replace(
+          locationUser
+            .replace(arr[3], 'dir=ASC')
+            .replace('page=' + getPage[1], 'page=1')
+        );
+
+        //      window.location.replace('');
+      });
+      $('#Last').click(() => {
+        if (getPage === undefined) {
+          window.location.replace(
+            window.location.href + '?page=1&size=10&sort=name&dir=DESC'
+          );
+        }
+        
+        window.location.replace(
+          locationUser
+            .replace(arr[3], 'dir=DESC')
+            .replace('page=' + getPage[1], 'page=1')
+        );
+
+        //      window.location.replace('');
       });
     </script>
   </body>

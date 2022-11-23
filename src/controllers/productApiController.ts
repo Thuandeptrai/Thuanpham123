@@ -4,8 +4,28 @@ import { Product } from '../models/product';
 
 const productApiController = {
   listing: (req: Request, res: Response, next: NextFunction): void => {
-    logger.info('retrieving product listing');
     let size: number = Number(req.query.size);
+    let orderList: any = String(req.query.dir).toUpperCase();
+    let userList: any = String(req.query.sort);
+    const mode =['DESC','ASC'];
+    const  listOrder = ['id', 'code', 'name','brand','category','type'];
+    const validate = mode.indexOf(orderList);
+    const validateSort = listOrder.indexOf(userList);
+    if(validate !== -1)
+    {
+      orderList = mode[validate];
+    }else{
+      orderList = mode[1];
+    }
+
+    if(validateSort !== -1)
+    {
+      userList = listOrder[validateSort];
+    }else{
+      userList = listOrder[0];
+    }
+
+    const products: any[] = [];
     if (Number.isNaN(size)) {
       size = 10;
     }
@@ -24,10 +44,7 @@ const productApiController = {
     Product.findAndCountAll({
       offset: (page - 1) * size,
       limit: size,
-      order: [
-        ['id', 'DESC'],
-        ['id', 'ASC'],
-      ],
+      order: [[userList, orderList]],
     })
       .then((result) => {
         if (result.rows) {
@@ -71,11 +88,9 @@ const productApiController = {
     try {
       const create = await Product.create(req.body);
       // logger.info('retrieving product listing');
-
       // logger.info(create);
       res.status(200).json(create);
     } catch (err) {
-      logger.info(err);
       res.status(500).json({
         status: false,
         message: 'Some thing went wrong',

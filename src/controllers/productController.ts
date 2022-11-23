@@ -4,8 +4,23 @@ import { Product } from '../models/product';
 const productController = {
   index: async (req: Request, res: Response, next: NextFunction) => {
     let size: number = Number(req.query.size);
-    const orderList: any = String(req.query.dir).toUpperCase();
+    let orderList: any = String(req.query.dir).toUpperCase();
+    let userList: any = String(req.query.sort);
+    const mode = ['DESC', 'ASC'];
+    const listOrder = ['id', 'code', 'name', 'brand', 'category', 'type'];
+    const validate = mode.indexOf(orderList);
+    const validateSort = listOrder.indexOf(userList);
+    if (validate !== -1) {
+      orderList = mode[validate];
+    } else {
+      orderList = mode[1];
+    }
 
+    if (validateSort !== -1) {
+      userList = listOrder[validateSort];
+    } else {
+      userList = listOrder[0];
+    }
     let products: any[] = [];
     if (Number.isNaN(size)) {
       size = 10;
@@ -25,13 +40,13 @@ const productController = {
     products = await Product.findAll({
       offset: (page - 1) * size,
       limit: size,
-      order: [
-        ['id', orderList || 'ACS'],
-      ],
+      order: [[userList, orderList]],
     });
     const message: string = '';
+    const TotalProduct: number = await Product.count();
     res.render('pages/product/index', {
       message,
+      TotalProduct,
       products,
     });
   },
@@ -39,6 +54,9 @@ const productController = {
   create: async (req: Request, res: Response, next: NextFunction) => {
     // FIXME
     const message: string = '';
+    res.render('pages/product/create', {
+      message,
+    });
   },
 
   store: async (req: Request, res: Response, next: NextFunction) => {
@@ -56,8 +74,13 @@ const productController = {
   },
 
   edit: async (req: Request, res: Response, next: NextFunction) => {
+    const code = req.params.code;
+    const FindProduct = await Product.findOne({ where: { code } });
+
     // FIXME
-    res.render('pages/product/error', {
+
+    res.render('pages/product/edit', {
+      FindProduct,
       message: 'not implemented',
     });
   },
